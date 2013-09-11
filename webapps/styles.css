@@ -1,0 +1,62 @@
+@charset "utf-8";
+/* CSS Document */
+
+/* .subhead {
+	font-size: large;
+	font-weight: bolder;
+}
+#heading {
+	font-size:36px;
+	font-weight:bolder;
+}
+body {
+	width:800px;
+	margin:auto;
+	font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+} */
+#tree {
+	float: right;
+}
+
+#topDiv {
+	position: absolute;
+	left: 100px;
+	top: 50px;
+}
+
+#viewer,#myCanvas,#labelEditor,#lineSelector,#scroller {
+	position: absolute;
+	left: 50px;
+	top: 200px;
+	height: 600px;
+	width: 800px;
+}
+
+#myCanvas {
+	z-index: 10;
+}
+
+#viewer {
+	z-index: -1;
+}
+
+#labelEditor {
+	z-index: -2;
+}
+
+#scroller {
+	z-index: -4;
+}
+
+#labelContent,#lineOptions {
+	position: absolute;
+	left: 20px;
+	top: 20px;
+	visibility: hidden;
+}
+
+#bottomDiv {
+	position: absolute;
+	left: 50px;
+	top: 800px;
+}

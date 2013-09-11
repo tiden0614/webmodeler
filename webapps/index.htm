@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<!-- saved from url=(0061)http://depts.washington.edu/aimgroup/proj/dollar/ndollar.html -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Multi-Strokes Test</title>
+<link href="./styles.css" rel="stylesheet" type="text/css">
+
+<!--[if IE]><script src="excanvas.js"></script><![endif]-->
+<script src="./lib/ndollar.js"></script>
+<script src="./lib/kinetic-v4.3.3.js"></script>
+<script src="./lib/jquery-1.9.1.js"></script>
+<script src="./dataHandling.js"></script>
+<script src="./drawing.js"></script>
+<script src="./lib/dojo-release-1.8.3/dojo/dojo.js"
+	data-dojo-config="async: true"></script>
+<link rel="stylesheet" type="text/css" media="screen,print"
+	href="./style.css" />
+<link rel="stylesheet"
+	href="./lib/dojo-release-1.8.3/dijit/themes/claro/claro.css"
+	media="screen">
+</head>
+<body onload="onLoadEvent()" class='claro'>
+
+	<div id='tree'></div>
+	<script>
+		require([ "dojo/aspect", "dojo/json", "dojo/query",
+				"dojo/store/Memory", "dojo/store/Observable", "dijit/Tree",
+				"dijit/tree/ObjectStoreModel", "dijit/tree/dndSource",
+				"dojo/domReady!" ], function(aspect, json, query, Memory,
+				Observable, Tree, ObjectStoreModel, dndSource) {
+
+			var graphsStore = new Memory({
+				data : [ {
+					name : 'tiden',
+					id : 'tiden'
+				}, {
+					name : 'Usecase',
+					id : 'Usecase',
+					parent : 'tiden'
+				}, {
+					name : 'Class',
+					id : 'Class',
+					parent : 'tiden'
+				} ],
+				getChildren : function(object) {
+					return this.query({
+						parent : object.id
+					});
+				},
+				getCertainChild : function(id) {
+					return this.query({
+						id : id
+					});
+				}
+			});
+
+			// Implementation of put
+			aspect.around(graphsStore, "put", function(originalPut) {
+				return function(obj, options) {
+					if (options && options.parent) {
+						obj.parent = options.parent.id;
+					}
+					return originalPut.call(graphsStore, obj, options);
+				}
+			});
+
+			graphsStore = new Observable(graphsStore);
+			_store = graphsStore;
+
+			var model = new ObjectStoreModel({
+				store : graphsStore,
+				query : {
+					id : 'tiden'
+				}
+			});
+
+			tree = new Tree({
+				model : model,
+				dndController : dndSource,
+				persist : false
+			}, "tree"); // make sure you have a target HTML element with this id
+			tree.startup();
+
+			_tree = tree;
+
+			tree.on("dblclick", function(object) {
+				var s = prompt("Enter a new name for the object");
+				object.name = s;
+				object.conn.name.setText(s);
+				drawLayers();
+				graphsStore.put(object);
+			}, true);
+
+			tree.on("click", function(object) {
+				if (object.name == 'Usecase')
+					showUsecase();
+				else if (object.name == 'Class')
+					showClass();
+			}, true);
+		});
+	</script>
+	<div id="Content" class='majorDiv'>
+		<div id="topDiv">
+			<p class="subhead">Multi-Strokes Test</p>
+
+			<p style="font-size: 10pt">
+				<i>Make the UML strokes on the canvas. <b><u>Right-click</u>
+						the canvas to recognize.</b></i>
+			</p>
+			<p style="font-size: 10pt">
+				<b>Current User: </b>tiden111@gmail.com
+			</p>
+			<input type="button" style="width: 120px; float: left"
+				value=" Multi-Strokes " onclick="onClickStrokes()"> <input
+				type="button" style="width: 64px; float: left" value=" Viewer "
+				onclick="onClickViewer()"><input
+				type="button" style="width: 64px; float: left" value=" Scroll "
+				onclick="onClickScroller()"> <input type="button"
+				style="width: 64px; float: left" value=" Save "
+				onclick="sendXML(generateXML())"> <input type="button"
+				style="width: 64px; float: left" value=" load " onclick="loadXML()">
+
+			<input type="button" style="width: 76px; float: left"
+				value=" Recognize " onclick="recognize()"> <input
+				type="button" style="width: 64px; float: left" value=" Clear "
+				onclick="onClickClearStrokes()"> <input type="button"
+				id="showUsecase" style="width: 70px; float: left" value=" Usecase "
+				onclick="showUsecase()"> <input type="button" id="showClass"
+				style="width: 64px; float: left" value=" Class "
+				onclick="showClass()">
+
+
+		</div>
+		<canvas id="myCanvas" width="800px" height="600px"
+			oncontextmenu="return false;">
+			<span style="background-color: #ffff88;">The &lt;canvas&gt; element is not supported by this browser.</span>
+
+		</canvas>
+		<div id="viewer"></div>
+
+		<div id="labelEditor">
+			<input type='text' id='labelContent' onkeypress='labelConfirm(event)'
+				onblur='labelEditor()'></input>
+		</div>
+		
+		<div id="scroller"></div>
+
+		<div id="lineSelector">
+			<select id="lineOptions" name="lineTypes"
+				onchange='onLineOptionSelected(event)'>
+				<option value="">null</option>
+				<option value="filledTriangle">filledTriangle</option>
+				<option value="emptyTriangle">emptyTriangle</option>
+				<option value="filledRhombus">filledRhombus</option>
+				<option value="emptyRhombus">emptyRhombus</option>
+			</select>
+		</div>
+
+		<div id="bottomDiv">
+			<!-- Editing area below stroking canvas area -->
+			<table border="0" width="420" style="font-size: 10pt">
+				<tbody>
+					<tr>
+						<td valign="top" align="left">Add as example of custom type:</td>
+						<td valign="top" align="right"><input type="text" id="custom"
+							style="width: 130px" value="Type name here..."
+							onclick="onClickCustom()"
+							onkeypress="if (event.keyCode == 13) onClickAddCustom()">
+						</td>
+						<td valign="top" align="right"><input type="button"
+							style="width: 64px" value="  Add   " onclick="onClickAddCustom()">
+						</td>
+					</tr>
+					<tr>
+						<td valign="top" align="left">Delete all user-defined
+							gestures:</td>
+						<td valign="top" align="right">&nbsp;</td>
+						<td valign="top" align="right"><input type="button"
+							style="width: 64px" value="Delete" onclick="onClickDelete()">
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<form style="font-size: 10pt">
+				<input type="radio" name="search" id="useGSS"> <span
+					style="font-weight: bold">Use Golden Section Search <i>(original)</i></span>
+				<br> <input type="radio" name="search" id="useProtractor"
+					checked=""> <span style="font-weight: bold">Use
+					Protractor <i>(faster)</i>
+				</span> <br> <input type="checkbox" id="useBoundedRotationInvariance"
+					onclick="confirmRebuild()"> <span style="font-weight: bold">Use
+					bounded rotation invariance (±45°)</span> <br> <input type="checkbox"
+					id="requireSameNoOfStrokes"> <span
+					style="font-weight: bold">Require same no. of component
+					strokes</span>
+			</form>
+		</div>
+		<p id="status"></p>
+
+	</div>
+
+</body>
+</html>
