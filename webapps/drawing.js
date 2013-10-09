@@ -2,7 +2,7 @@
 // Startup
 //
 // global
-var _isDown, _points, _strokes, _r, _g, _rc, canvas, evt, _scrollerWannaDown = true, _usingGestures;
+var _isDown, _timeout = false,_points, _strokes, _r, _g, _rc, canvas, evt, _scrollerWannaDown = true, _usingGestures;
 // variables
 var _usecase = new Array();
 var _class = new Array();
@@ -25,7 +25,11 @@ var _curStage;
 var _gesPoints = new Array();
 var _gesLines = new Array();
 
+var _lineRelationRect;
+var _drawingLineHead = false;
 var _tempObj;
+var _lineHeadPoints;
+var _drawingLineHeadLine;
 // Consts
 var PI = Math.PI, PI_2 = PI / 2, infiniteDistance = 1960000;
 
@@ -138,6 +142,31 @@ function onLoadEvent() {
 		opacity : 0
 	});
 
+	_lineRelationRect = new Kinetic.Rect({
+		x: 0,
+		y: 0,
+		width: 0,
+		height: 0,
+		visible: false,
+		fill: "lightyellow",
+		opacity: 0.4
+	});
+
+	_lineRelationRect.isInside = function(p){
+		var _p = this.getAbsolutePosition();
+		var w  = this.getWidth();
+		var h  = this.getHeight();
+		var l  = w>0? _p.x: _p.x + w;
+		var r  = l + Math.abs(w);
+		var t  = h>0? _p.y: _p.y + h;
+		var b  = t + Math.abs(t);
+		
+		var c =	p.x > l && p.x < r && p.y > t && p.y < b;
+
+		return c;
+	};
+
+
 //	stage.on('dbltap', function(event) {
 //		_usingGestures = false;
 //		event.preventDefault();
@@ -196,6 +225,10 @@ function onLoadEvent() {
 
 	_gesLayer = new Kinetic.Layer();
 	stage.add(_gesLayer);
+	classLineLayer.add(_lineRelationRect);
+
+	_class.push(_lineRelationRect);
+
 	_isDown = false;
 
 	// Initialize Arrays
@@ -1502,13 +1535,13 @@ function buildClass(x, y, labelText, id, width, height) {
 	attrAdder.on('mousedown touchstart', function() {
 		_usingGestures = false;
 		this.group.addAttr("attribute", false);
-		this.showTouchDeleters();
+		this.group.showTouchDeleters();
 	});
 
 	methAdder.on('mousedown touchstart', function() {
 		_usingGestures = false;
 		this.group.addMeth("method", false);
-		this.showTouchDeleters();
+		this.group.showTouchDeleters();
 	});
 
 	sizeRect.on('mouseover', function() {
@@ -1556,51 +1589,51 @@ function buildClass(x, y, labelText, id, width, height) {
 		classEntityLayer.draw();
 	});
 
-	classRect.on('mousedown touchstart', function(event) {
-		_usingGestures = false;
-		// Check if there is other objects that wanna connect this
-		var eventtype = "touchstart";
-		if (_wannaConn && _curConnUser != this.group) {
-			_wannaConn = false;
-			var source = _curConnUser;
-			_curConnUser = null;
-			source.pointer.setStrokeWidth(1);
-			source.hideComponents();
-			source.hideTouchDeleters();
-			if (!this.group.isConnectedToThis(source)) {
-				var sCC = source.getClosestConnector(this.group
-						.getAbsolutePosition());
-				var tCC = this.group.getClosestConnector(source
-						.getAbsolutePosition());
-				drawLine(sCC.x, sCC.y, tCC.x, tCC.y, source, this.group,
-						classLineLayer, "");
-				this.group.connectedObjects.push(source);
-				source.connectedObjects.push(this.group);
-			}
-		} else if (_wannaConn && _curConnUser == this.group) {
-			_wannaConn = false;
-			this.setStrokeWidth(1);
-			if (event.type == eventtype) {
-				this.group.hideComponents();
-				this.group.hideTouchDeleters();
-			}
-		} else {
-			if (_curConnUser != null) {
-				_curConnUser.pointer.setStrokeWidth(1);
-				_curConnUser.hideComponents();
-				_curConnUser.hideTouchDeleters();
-			}
-			this.setStrokeWidth(2);
-			_curConnUser = this.group;
-			_wannaConn = true;
-			if (event.type == eventtype) {
-				this.group.showComponents();
-				this.group.showTouchDeleters();
-			}
-		}
-
-		classEntityLayer.draw();
-	});
+//	classRect.on('mousedown touchstart', function(event) {
+//		_usingGestures = false;
+//		// Check if there is other objects that wanna connect this
+//		var eventtype = "touchstart";
+//		if (_wannaConn && _curConnUser != this.group) {
+//			_wannaConn = false;
+//			var source = _curConnUser;
+//			_curConnUser = null;
+//			source.pointer.setStrokeWidth(1);
+//			source.hideComponents();
+//			source.hideTouchDeleters();
+//			if (!this.group.isConnectedToThis(source)) {
+//				var sCC = source.getClosestConnector(this.group
+//						.getAbsolutePosition());
+//				var tCC = this.group.getClosestConnector(source
+//						.getAbsolutePosition());
+//				drawLine(sCC.x, sCC.y, tCC.x, tCC.y, source, this.group,
+//						classLineLayer, "");
+//				this.group.connectedObjects.push(source);
+//				source.connectedObjects.push(this.group);
+//			}
+//		} else if (_wannaConn && _curConnUser == this.group) {
+//			_wannaConn = false;
+//			this.setStrokeWidth(1);
+//			if (event.type == eventtype) {
+//				this.group.hideComponents();
+//				this.group.hideTouchDeleters();
+//			}
+//		} else {
+//			if (_curConnUser != null) {
+//				_curConnUser.pointer.setStrokeWidth(1);
+//				_curConnUser.hideComponents();
+//				_curConnUser.hideTouchDeleters();
+//			}
+//			this.setStrokeWidth(2);
+//			_curConnUser = this.group;
+//			_wannaConn = true;
+//			if (event.type == eventtype) {
+//				this.group.showComponents();
+//				this.group.showTouchDeleters();
+//			}
+//		}
+//
+//		classEntityLayer.draw();
+//	});
 
 	var group = buildGroup(x, y, classRect, className, hLine1, hLine2,
 			attrAdderGroup, methAdderGroup, sizeRect, attrDeleter);
@@ -2285,17 +2318,58 @@ function onGroupTouchStart(event){
 	
 	if(event.type == "mousedown"){
 		// Mouse event
-		
-		var p = {x: event.layerX, y: event.layerY};
-		_tempObj = findEventFirer(p);
-		var e = _tempObj.curEvent;
-		e.startType = "oneDrag";
-		e.curPoint = e.startPoint = p;
-		e.longPress = true;
-		e.tappedDown = true;
-		
-		// The implementation of long press func
-		setTimeout("onGroupLongPress(_tempObj)", 1000);
+		 
+		var p = getPointOnCanvas({x: event.pageX, y: event.pageY});
+
+		if(!_drawingLineHead){
+			_tempObj = findEventFirer(p);
+			var e = _tempObj.curEvent;
+			e.startType = "oneDrag";
+			e.curPoint = e.startPoint = p;
+			e.longPress = true;
+			e.tappedDown = true;
+			
+			// The implementation of long press func
+			setTimeout("onGroupLongPress(_tempObj)", 1000);
+		} else {
+			_tempObj = findEventFirer(p);
+			if(_tempObj == _lineRelationRect){
+				var e = {
+					longPress: false,
+					startTime: event.timeStamp,
+					curTime: event.timeStamp,
+					tappedDown: true,
+					startPoint: {
+						x: p.x,
+						y: p.y
+					},
+					curPoint: {
+						x: p.x,
+						y: p.y
+					},
+					startType: "drawLineHead",
+					touchId:0
+				};
+				_tempObj.curEvent = e;
+				_lineHeadPoints = new Array();
+				_lineHeadPoints.push(p);
+				_drawingLineHeadLine = new Kinetic.Line({
+					points: _lineHeadPoints,
+					stroke: 'green',
+        			strokeWidth: 2,
+        			lineJoin: 'round',
+				});
+				classLineLayer.add(_drawingLineHeadLine);
+				classLineLayer.draw();
+
+			} else {
+				_tempObj = null;
+				_drawingLineHead = false;
+				_lineRelationRect.setVisible(false);
+				classLineLayer.draw();
+			}
+
+		}
 		
 		// For debug use
 		_console("touch start: {" + "startPoint: (" + event.layerX + "," + event.layerY + "), timestamp: "
@@ -2356,9 +2430,10 @@ function onGroupTouchStart(event){
 				_tempObj.list = objs;
 				for(var i = 0; i < objs.length; i++){
 					var p = {
-							x: event.targetTouches[i].layerX,
-							y: event.targetTouches[i].layerY,
+							x: event.targetTouches[i].pageX,
+							y: event.targetTouches[i].pageY,
 					};
+					p = getPointOnCanvas(p);
 					var e = objs[i].curEvent;
 					type = e.startType = "multiDrag";
 					e.touchId = event.targetTouches[i].identifier;
@@ -2374,16 +2449,56 @@ function onGroupTouchStart(event){
 		} else {
 			// Single touch
 			
-			var p = {x: event.layerX, y: event.layerY};
-			_tempObj = findEventFirer(p);
-			var e = _tempObj.curEvent;
-			e.startType = "oneDrag";
-			e.curPoint = e.startPoint = p;
-			e.longPress = true;
-			e.tappedDown = true;
-			
-			// The implementation of long press func
-			setTimeout("onGroupLongPress(_tempObj)", 1000);
+			var p = getPointOnCanvas({x: event.pageX, y: event.pageY});
+
+			if(!_drawingLineHead){
+				_tempObj = findEventFirer(p);
+					var e = _tempObj.curEvent;
+					e.startType = "oneDrag";
+					e.curPoint = e.startPoint = p;
+					e.longPress = true;
+					e.tappedDown = true;
+					
+					// The implementation of long press func
+					setTimeout("onGroupLongPress(_tempObj)", 1000);
+			} else {
+				_tempObj = findEventFirer(p);
+				if(_tempObj == _lineRelationRect){
+					var e = {
+						longPress: false,
+						startTime: event.timeStamp,
+						curTime: event.timeStamp,
+						tappedDown: true,
+						startPoint: {
+							x: p.x,
+							y: p.y
+						},
+						curPoint: {
+							x: p.x,
+							y: p.y
+						},
+						startType: "drawLineHead",
+						touchId:0
+					};
+					_tempObj.curEvent = e;
+					_lineHeadPoints = new Array();
+					_lineHeadPoints.push(p);
+					_drawingLineHeadLine = new Kinetic.Line({
+						points: _lineHeadPoints,
+						stroke: 'green',
+        				strokeWidth: 2,
+        				lineJoin: 'round',
+					});
+					classLineLayer.add(_drawingLineHeadLine);
+					classLineLayer.draw();
+	
+				} else {
+					_tempObj = null;
+					_drawingLineHead = false;
+					_lineRelationRect.setVisible(false);
+					classLineLayer.draw();
+				}
+			}
 			
 			// For debug use
 			_console("touch start: {" + "startPoint: (" + e.curPoint.x + "," + e.curPoint.y + "), timestamp: "
@@ -2401,12 +2516,14 @@ function onGroupTouchMove(event){
 		if(e.startType == "oneDrag"){
 			// Mouse move or single touch
 			
-			var movedX = event.layerX - e.curPoint.x;
-			var movedY = event.layerY - e.curPoint.y;
+			var _p = {x: event.pageX, y: event.pageY};
+			_p = getPointOnCanvas(_p);
+			var movedX = _p.x - e.curPoint.x;
+			var movedY = _p.y - e.curPoint.y;
 			_tempObj.moveThis(movedX, movedY);
 			usecaseEntityLayer.draw();
 			classEntityLayer.draw();
-			e.curPoint = {x: event.layerX, y: event.layerY};
+			e.curPoint = _p;
 		} else if(e.startType == "multiOnOne") {
 			// Dragging the newly created class
 			
@@ -2448,6 +2565,21 @@ function onGroupTouchMove(event){
 			};
 			usecaseEntityLayer.draw();
 			classEntityLayer.draw();
+		} else if(e.startType == "longPressDrawRelation"){
+			var tp = {x: event.pageX, y: event.pageY};
+			tp = getPointOnCanvas(tp);
+			var sp = _tempObj.source.getClosestConnector(tp);
+			var points = _tempObj.getPoints();
+			points[0] = sp;
+			points[1] = tp;
+			classLineLayer.draw();
+		} else if(e.startType == "drawLineHead"){
+			var _p = getPointOnCanvas({x: event.pageX, y: event.pageY});
+			if(_lineRelationRect.isInside(_p)){
+				_lineHeadPoints.push(_p);
+				_drawingLineHeadLine.setPoints(_lineHeadPoints);
+				classLineLayer.draw();
+			}
 		}
 	}
 }
@@ -2457,8 +2589,63 @@ function onGroupTouchEnd(event){
 	var e = _tempObj.curEvent;
 	if(e.tappedDown){
 		e.tappedDown = false;
-		if(e.longPress) e.longPress = false;
-		
+		if(e.startType == "longPressDrawRelation"){
+			if(e.longPress) e.longPress = false;
+			var cp = {x: event.pageX, y: event.pageY};
+			cp = getPointOnCanvas(cp);
+			var tobj = findEventFirer(cp);
+			if(tobj != null){
+				var sobj = _tempObj.source;
+				var sp = sobj.getClosestConnector(cp);
+				var tp = tobj.getClosestConnector(sp);
+				_tempObj.remove();
+				_lineRelationRect.line = drawLine(sp.x, sp.y, cp.x, cp.y, sobj, tobj, classLineLayer, "");
+				_lineRelationRect.setAbsolutePosition(sp);
+				_lineRelationRect.setWidth(tp.x - sp.x);
+				_lineRelationRect.setHeight(tp.y - sp.y);
+				_lineRelationRect.setVisible(true);
+
+				classLineLayer.draw();
+			} else {
+				_tempObj.remove();
+				classLineLayer.draw();
+			}
+		} else if(e.startType == "drawLineHead"){
+			if(e.longPress) e.longPress = false;
+
+			_drawingLineHead = false;
+			_drawingLineHeadLine.remove();
+			_drawingLineHeadLine = null;
+			_lineRelationRect.setVisible(false);
+
+			var __p = new Array();
+			var ___p = new Array();
+
+			for(var _i=0;_i<_lineHeadPoints.length;_i++)
+				___p.push({
+					X: _lineHeadPoints[_i].x,
+					Y: _lineHeadPoints[_i].y
+				});
+			__p.push(___p);
+
+			var result = _r.Recognize(__p, document
+				.getElementById('useBoundedRotationInvariance').checked,
+				document.getElementById('requireSameNoOfStrokes').checked,
+				document.getElementById('useProtractor').checked);
+
+			if(result.Name == "D"){
+				_lineRelationRect.line.addLineHead('emptyRhombus');
+			} else {
+ 				_lineRelationRect.line.addLineHead('emptyTriangle');
+			}
+
+			classLineLayer.draw();
+			_console("changeLineHead:" + result.Name);
+		} else if(e.startType == "multiOnOne"){
+			if(event.targetTouches.length > 0)
+				return;
+			if(e.longPress) e.longPress = false;
+		}
 		
 //		_console("touch end");
 	}
@@ -2469,6 +2656,29 @@ function onGroupLongPress(obj){
 	if(e.tappedDown && e.longPress){
 		_console("long press");
 		e.longPress = false;
+		e.startType = "longPressDrawRelation";
+
+		var _p = e.startPoint;
+		var p  = _tempObj.getClosestConnector(_p);
+
+		var conn = new Kinetic.Line({
+			points : [ p.x, p.y, _p.x, _p.y ],
+			stroke : 'grey',
+			strokeWidth : 3,
+			lineCap : 'round',
+			lineJoin : 'round',
+		});
+
+		conn.source = _tempObj;
+		conn.curEvent = e;
+
+		_tempObj = conn;
+
+		classLineLayer.add(conn);
+		classLineLayer.draw();
+
+		_drawingLineHead = true;
+
 	}
 }
 
@@ -2572,6 +2782,7 @@ function onMouseUp(event) {
 }
 
 function onCanvasTouchStart(evt) {
+	_timeout = false;
 	document.onselectstart = function() {
 		return false;
 	}; // disable drag-select
@@ -2631,6 +2842,14 @@ function onCanvasTouchEnd(evt) {
 	// set
 	drawText("Stroke #" + _strokes.length + " recorded.");
 
+	_timeout = true;
+	setTimeout("onCanvasTouchTimeout(evt);", 1000);
+}
+
+function onCanvasTouchTimeout(evt) {
+	if(_timeout){
+		recognize(evt);
+	}
 }
 
 function onStageTouchStart(evt) {
@@ -3137,8 +3356,10 @@ function drawLine(x1, y1, x2, y2, source, terminal, lineLayer, nameText) {
 	if(!nameText == "")
 		conn.addLineHead(nameText);
 	
-	source.lines.push(conn);
-	terminal.lines.push(conn);
+	if(source && source != null)
+		source.lines.push(conn);
+	if(terminal && terminal != null)
+		terminal.lines.push(conn);
 	_line.push(conn);
 	lineLayer.add(conn);
 	lineLayer.add(name);

@@ -111,7 +111,8 @@ function generateXML() {
 			xml += "<" + a.type + ">";
 
 			for ( var i = 0; i < a.length; i++) {
-				xml += a[i].getXML();
+				if(_lineRelationRect&&a[i]!=_lineRelationRect)
+					xml += a[i].getXML();
 			}
 
 			xml += "</" + a.type + ">";
