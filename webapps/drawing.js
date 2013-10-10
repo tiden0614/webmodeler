@@ -2315,7 +2315,7 @@ function buildPakage(x, y, labelText, id, width, height) {
 
 // Group Event Handlers
 function onGroupTouchStart(event){
-	
+	event.preventDefault();
 	if(event.type == "mousedown"){
 		// Mouse event
 		 
@@ -2508,6 +2508,7 @@ function onGroupTouchStart(event){
 }
 
 function onGroupTouchMove(event){
+	event.preventDefault();
 	if(!_tempObj) return;
 	var e = _tempObj.curEvent;
 	if(e.tappedDown){
@@ -2585,6 +2586,7 @@ function onGroupTouchMove(event){
 }
 
 function onGroupTouchEnd(event){
+	event.preventDefault();
 	if(!_tempObj) return;
 	var e = _tempObj.curEvent;
 	if(e.tappedDown){
