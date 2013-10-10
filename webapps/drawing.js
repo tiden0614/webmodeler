@@ -1589,17 +1589,17 @@ function buildClass(x, y, labelText, id, width, height) {
 		classEntityLayer.draw();
 	});
 
-//	classRect.on('mousedown touchstart', function(event) {
-//		_usingGestures = false;
-//		// Check if there is other objects that wanna connect this
-//		var eventtype = "touchstart";
-//		if (_wannaConn && _curConnUser != this.group) {
-//			_wannaConn = false;
-//			var source = _curConnUser;
-//			_curConnUser = null;
-//			source.pointer.setStrokeWidth(1);
-//			source.hideComponents();
-//			source.hideTouchDeleters();
+	classRect.on('mousedown touchstart', function(event) {
+		_usingGestures = false;
+		// Check if there is other objects that wanna connect this
+		var eventtype = "touchstart";
+		if (_wannaConn && _curConnUser != this.group) {
+			_wannaConn = false;
+			var source = _curConnUser;
+			_curConnUser = null;
+			source.pointer.setStrokeWidth(1);
+			source.hideComponents();
+			source.hideTouchDeleters();
 //			if (!this.group.isConnectedToThis(source)) {
 //				var sCC = source.getClosestConnector(this.group
 //						.getAbsolutePosition());
@@ -1610,30 +1610,30 @@ function buildClass(x, y, labelText, id, width, height) {
 //				this.group.connectedObjects.push(source);
 //				source.connectedObjects.push(this.group);
 //			}
-//		} else if (_wannaConn && _curConnUser == this.group) {
-//			_wannaConn = false;
-//			this.setStrokeWidth(1);
-//			if (event.type == eventtype) {
-//				this.group.hideComponents();
-//				this.group.hideTouchDeleters();
-//			}
-//		} else {
-//			if (_curConnUser != null) {
-//				_curConnUser.pointer.setStrokeWidth(1);
-//				_curConnUser.hideComponents();
-//				_curConnUser.hideTouchDeleters();
-//			}
-//			this.setStrokeWidth(2);
-//			_curConnUser = this.group;
-//			_wannaConn = true;
-//			if (event.type == eventtype) {
-//				this.group.showComponents();
-//				this.group.showTouchDeleters();
-//			}
-//		}
-//
-//		classEntityLayer.draw();
-//	});
+		} else if (_wannaConn && _curConnUser == this.group) {
+			_wannaConn = false;
+			this.setStrokeWidth(1);
+			if (event.type == eventtype) {
+				this.group.hideComponents();
+				this.group.hideTouchDeleters();
+			}
+		} else {
+			if (_curConnUser != null) {
+				_curConnUser.pointer.setStrokeWidth(1);
+				_curConnUser.hideComponents();
+				_curConnUser.hideTouchDeleters();
+			}
+			this.setStrokeWidth(2);
+			_curConnUser = this.group;
+			_wannaConn = true;
+			if (event.type == eventtype) {
+				this.group.showComponents();
+				this.group.showTouchDeleters();
+			}
+		}
+
+		classEntityLayer.draw();
+	});
 
 	var group = buildGroup(x, y, classRect, className, hLine1, hLine2,
 			attrAdderGroup, methAdderGroup, sizeRect, attrDeleter);
