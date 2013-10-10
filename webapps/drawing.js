@@ -1818,7 +1818,7 @@ function buildClass(x, y, labelText, id, width, height) {
 		var attrLabelRect = new Kinetic.Rect({
 			x : 0,
 			y : attrLabel.getY() + 20,
-			width : attrLabel.getWidth(),
+			width : 20,
 			height : 15,
 			fill : 'lightyellow',
 			stroke : 'black',
@@ -1927,7 +1927,7 @@ function buildClass(x, y, labelText, id, width, height) {
 		var methLabelRect = new Kinetic.Rect({
 			x : 0,
 			y : methLabel.getY() + 20,
-			width : methLabel.getWidth(),
+			width : 20,
 			height : 15,
 			fill : 'lightyellow',
 			stroke : 'black',
@@ -2596,7 +2596,7 @@ function onGroupTouchEnd(event){
 			var cp = {x: event.pageX, y: event.pageY};
 			cp = getPointOnCanvas(cp);
 			var tobj = findEventFirer(cp);
-			if(tobj != null){
+			if(tobj != null && tobj!=_lineRelationRect){
 				var sobj = _tempObj.source;
 				var sp = sobj.getClosestConnector(cp);
 				var tp = tobj.getClosestConnector(sp);
