@@ -1590,16 +1590,16 @@ function buildClass(x, y, labelText, id, width, height) {
 	});
 
 	classRect.on('mousedown touchstart', function(event) {
-		_usingGestures = false;
-		// Check if there is other objects that wanna connect this
-		var eventtype = "touchstart";
-		if (_wannaConn && _curConnUser != this.group) {
-			_wannaConn = false;
-			var source = _curConnUser;
-			_curConnUser = null;
-			source.pointer.setStrokeWidth(1);
-			source.hideComponents();
-			source.hideTouchDeleters();
+//		_usingGestures = false;
+//		// Check if there is other objects that wanna connect this
+//		var eventtype = "touchstart";
+//		if (_wannaConn && _curConnUser != this.group) {
+//			_wannaConn = false;
+//			var source = _curConnUser;
+//			_curConnUser = null;
+//			source.pointer.setStrokeWidth(1);
+//			source.hideComponents();
+//			source.hideTouchDeleters();
 //			if (!this.group.isConnectedToThis(source)) {
 //				var sCC = source.getClosestConnector(this.group
 //						.getAbsolutePosition());
@@ -1610,28 +1610,37 @@ function buildClass(x, y, labelText, id, width, height) {
 //				this.group.connectedObjects.push(source);
 //				source.connectedObjects.push(this.group);
 //			}
-		} else if (_wannaConn && _curConnUser == this.group) {
-			_wannaConn = false;
-			this.setStrokeWidth(1);
-			if (event.type == eventtype) {
-				this.group.hideComponents();
-				this.group.hideTouchDeleters();
-			}
-		} else {
-			if (_curConnUser != null) {
-				_curConnUser.pointer.setStrokeWidth(1);
-				_curConnUser.hideComponents();
-				_curConnUser.hideTouchDeleters();
-			}
-			this.setStrokeWidth(2);
-			_curConnUser = this.group;
-			_wannaConn = true;
-			if (event.type == eventtype) {
-				this.group.showComponents();
-				this.group.showTouchDeleters();
-			}
-		}
+//		} else if (_wannaConn && _curConnUser == this.group) {
+//			_wannaConn = false;
+//			this.setStrokeWidth(1);
+//			if (event.type == eventtype) {
+//				this.group.hideComponents();
+//				this.group.hideTouchDeleters();
+//			}
+//		} else {
+//			if (_curConnUser != null) {
+//				_curConnUser.pointer.setStrokeWidth(1);
+//				_curConnUser.hideComponents();
+//				_curConnUser.hideTouchDeleters();
+//			}
+//			this.setStrokeWidth(2);
+//			_curConnUser = this.group;
+//			_wannaConn = true;
+//			if (event.type == eventtype) {
+//				this.group.showComponents();
+//				this.group.showTouchDeleters();
+//			}
+//		}
 
+		if(!this.group.showingComponents){
+			this.group.showComponents();
+			this.group.showTouchDeleters();
+			this.group.showingComponents = true;
+		} else {
+			this.group.hideComponents();
+			this.group.hideTouchDeleters();
+			this.group.showingComponents = false;
+		}
 		classEntityLayer.draw();
 	});
 
@@ -1660,8 +1669,8 @@ function buildClass(x, y, labelText, id, width, height) {
 		td.group = this;
 
 		var rect = new Kinetic.Rect({
-			width : 10,
-			height : 10,
+			width : 15,
+			height : 15,
 			x : 0,
 			y : 0,
 			fill : "white",
@@ -1673,14 +1682,14 @@ function buildClass(x, y, labelText, id, width, height) {
 		rect.curAttr = attr;
 
 		var line1 = new Kinetic.Line({
-			points : [ 1, 1, 9, 9 ],
+			points : [ 1, 1, 14, 14 ],
 			stroke : 'black',
 			strokeWidth : 1,
 			listening : false
 		});
 
 		var line2 = new Kinetic.Line({
-			points : [ 9, 1, 1, 9 ],
+			points : [ 14, 1, 1, 14 ],
 			stroke : 'black',
 			strokeWidth : 1,
 			listening : false
@@ -1754,6 +1763,7 @@ function buildClass(x, y, labelText, id, width, height) {
 	group.leastHeight = hei;
 	group.leastWidth = wid;
 	group.touchDeleters = new Array();
+	group.showingComponents = false;
 
 	attrAdder.group = methAdder.group = group;
 
@@ -1822,7 +1832,7 @@ function buildClass(x, y, labelText, id, width, height) {
 			height : 15,
 			fill : 'lightyellow',
 			stroke : 'black',
-			opacity : 0
+			opacity : 20
 		});
 
 		attrLabelRect.label = attrLabel;
@@ -1931,7 +1941,7 @@ function buildClass(x, y, labelText, id, width, height) {
 			height : 15,
 			fill : 'lightyellow',
 			stroke : 'black',
-			opacity : 0
+			opacity : 20
 		});
 
 		methLabelRect.label = methLabel;
@@ -2586,6 +2596,7 @@ function onGroupTouchMove(event){
 }
 
 function onGroupTouchEnd(event){
+	event.preventDefault();
 	if(!_tempObj) return;
 	var e = _tempObj.curEvent;
 	if(e.tappedDown){
