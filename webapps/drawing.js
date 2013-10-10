@@ -2414,7 +2414,7 @@ function onGroupTouchStart(event){
 				
 				var p1 = objs[0].getClosestConnector(p);
 				var p2 = _tempObj.getClosestConnector(p1);
-				drawLine(p2.x, p2.y, p1.x, p1.y, _tempObj, objs[0], classLineLayer, "emptyTriangle");
+				drawLine(p2.x, p2.y, p1.x, p1.y, _tempObj, objs[0], classLineLayer, "");
 				var e = _tempObj.curEvent;
 				type = e.startType = "multiOnOne";
 				e.startPoint = e.curPoint = p;
@@ -2586,7 +2586,6 @@ function onGroupTouchMove(event){
 }
 
 function onGroupTouchEnd(event){
-	event.preventDefault();
 	if(!_tempObj) return;
 	var e = _tempObj.curEvent;
 	if(e.tappedDown){
@@ -2596,7 +2595,7 @@ function onGroupTouchEnd(event){
 			var cp = {x: event.pageX, y: event.pageY};
 			cp = getPointOnCanvas(cp);
 			var tobj = findEventFirer(cp);
-			if(tobj != null && tobj!=_lineRelationRect){
+			if(tobj != null){
 				var sobj = _tempObj.source;
 				var sp = sobj.getClosestConnector(cp);
 				var tp = tobj.getClosestConnector(sp);
@@ -2997,37 +2996,69 @@ function recognize() {
 				+ ").");
 
 		$('#status').html(result.Name);
-		if (result.Name == "D" || result.Name == "P"
-				|| result.Name == "half-note") {
-			drawText("Build Use Case");
-			buildUseCase(x, y);
-			onClickClearStrokes();
-			showUsecase();
-		} else if (result.Name == "T" || result.Name == "X"
+//		if (result.Name == "D" || result.Name == "P"
+//				|| result.Name == "half-note") {
+//			drawText("Build Use Case");
+//			buildUseCase(x, y);
+//			onClickClearStrokes();
+//			showUsecase();
+//		} else if (result.Name == "T" || result.Name == "X"
+//				|| result.Name == "N") {
+//			drawText("Build User");
+//			buildUser(x, y);
+//			onClickClearStrokes();
+//			showUsecase();
+//		} else if (result.Name == "H") {
+//			drawText("Build Class");
+//			var c = buildClass(x, y);
+//			c.addAttr('attr1: int', false);
+//			c.addAttr('attr2: String', false);
+//			c.addMeth('function1(): void', false);
+//			c.addMeth('function2(): void', false);
+//			onClickClearStrokes();
+//			showClass();
+//		} else if (result.Name == "null") {
+//			drawText("Build System Boundary");
+//			buildSystemBoundary(x, y);
+//			onClickClearStrokes();
+//			showUsecase();
+//		} else if (result.Name == "pitchfork") {
+//			drawText("Build Pakage");
+//			buildPakage(x, y);
+//			onClickClearStrokes();
+//			showClass();
+//		}
+		if(_curStage == 0) {
+			if(result.Name == "D" || result == "P" 
+				|| result.Name == "half-note"){
+				drawText("Build Use Case");
+				buildUseCase(x, y);
+				onClickClearStrokes();
+			} else if (result.Name == "T" || result.Name == "X"
 				|| result.Name == "N") {
-			drawText("Build User");
-			buildUser(x, y);
-			onClickClearStrokes();
-			showUsecase();
-		} else if (result.Name == "H") {
-			drawText("Build Class");
-			var c = buildClass(x, y);
-			c.addAttr('attr1: int', false);
-			c.addAttr('attr2: String', false);
-			c.addMeth('function1(): void', false);
-			c.addMeth('function2(): void', false);
-			onClickClearStrokes();
-			showClass();
-		} else if (result.Name == "null") {
-			drawText("Build System Boundary");
-			buildSystemBoundary(x, y);
-			onClickClearStrokes();
-			showUsecase();
-		} else if (result.Name == "pitchfork") {
-			drawText("Build Pakage");
-			buildPakage(x, y);
-			onClickClearStrokes();
-			showClass();
+				drawText("Build User");
+				buildUser(x, y);
+				onClickClearStrokes();
+			} else if (result.Name == "pitchfork") {
+				drawText("Build System Boundary");
+				buildSystemBoundary(x, y);
+				onClickClearStrokes();
+			}
+		} else if(_curStage == 1) {
+			if(result.Name == "D" || result == "P" 
+				|| result.Name == "half-note"){
+				drawText("Build Class");
+				var c = buildClass(x, y);
+				c.addAttr('attr1: int', false);
+				c.addAttr('attr2: String', false);
+				c.addMeth('function1(): void', false);
+				c.addMeth('function2(): void', false);
+				onClickClearStrokes();
+			} else if (result.Name == "pitchfork") {
+				drawText("Build Pakage");
+				buildPakage(x, y);
+				onClickClearStrokes();
+			}
 		}
 	} else {
 		drawText("Too little input made. Please try again.");
